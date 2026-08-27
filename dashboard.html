@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard — Online Library Admin</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%276%27 fill=%27%231c6b46%27/%3E%3Cpath d=%27M6 18.5A2 2 0 0 1 8 16.5H18%27 stroke=%27white%27 stroke-width=%272%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3Cpath d=%27M8 4H18v16H8A2 2 0 0 1 6 18V6A2 2 0 0 1 8 4Z%27 stroke=%27white%27 stroke-width=%272%27 fill=%27none%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E" />
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#1c6b46" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="dashboard">
+
+  <div id="loadingScreen">
+    <div class="loader-book"><span></span></div>
+    <p>Unlocking the admin desk…</p>
+  </div>
+
+  <!-- Shown if someone reaches this page without logging in -->
+  <div class="dash-locked hidden-init" id="dashLocked">
+    <div class="logo-mark icon-lg">🔒</div>
+    <h2>Admins only</h2>
+    <p class="text-muted">Please sign in to reach the dashboard.</p>
+    <a href="admin.html" class="btn btn-primary">Go to admin login</a>
+  </div>
+
+  <div class="dash-shell hidden-init" id="dashShell">
+    <!-- ============================= SIDEBAR ============================= -->
+    <aside class="dash-sidebar">
+      <a href="index.html" class="logo">
+        <span class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></span>
+        Library Admin
+      </a>
+      <nav class="dash-nav">
+        <button data-view="overview" class="active">📊 &nbsp;Overview</button>
+        <button data-view="upload">⬆️ &nbsp;Upload Book</button>
+        <button data-view="manage">📚 &nbsp;Manage Books</button>
+        <button data-view="departments">🏛️ &nbsp;Departments</button>
+        <button data-view="storebooks">🛍️ &nbsp;Store Books</button>
+        <button data-view="storecats">🏷️ &nbsp;Store Categories</button>
+        <button data-view="orders">🛒 &nbsp;Orders</button>
+        <button data-view="messages">✉️ &nbsp;Messages</button>
+        <button data-view="users">👤 &nbsp;Users</button>
+        <button data-view="downloads">⬇️ &nbsp;Downloads</button>
+        <button data-view="readingstats">📖 &nbsp;Reading Stats</button>
+      </nav>
+      <button class="icon-btn theme-toggle self-start" aria-label="Toggle dark mode"></button>
+      <button class="logout-btn" id="logoutBtn">↩ Log out</button>
+    </aside>
+
+    <!-- ============================= MAIN ============================= -->
+    <main class="dash-main">
+
+      <!-- ---------- Overview ---------- -->
+      <section class="dash-view active" id="view-overview">
+        <div class="dash-topbar">
+          <div>
+            <h1>Welcome back, admin</h1>
+            <p class="text-muted">Here's what's on the shelf right now.</p>
+          </div>
+          <a href="index.html" class="btn btn-outline btn-sm">View live site →</a>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="ic">🏛️</div>
+            <strong id="statTotalDepts">0</strong>
+            <span>Total departments</span>
+          </div>
+          <div class="stat-card">
+            <div class="ic">📚</div>
+            <strong id="statTotalBooks">0</strong>
+            <span>Total books</span>
+          </div>
+          <div class="stat-card">
+            <div class="ic">⬆️</div>
+            <strong id="statTotalUploads">0</strong>
+            <span>Admin uploads</span>
+          </div>
+          <div class="stat-card">
+            <div class="ic">🧾</div>
+            <strong id="statTotalCourses">0</strong>
+            <span>Courses tracked</span>
+          </div>
+          <div class="stat-card">
+            <div class="ic">👤</div>
+            <strong id="statTotalUsers">0</strong>
+            <span>Total users</span>
+          </div>
+          <div class="stat-card">
+            <div class="ic">🛒</div>
+            <strong id="statTotalOrders">0</strong>
+            <span>Total orders</span>
+          </div>
+          <div class="stat-card">
+            <div class="ic">৳</div>
+            <strong id="statTotalSales">৳0</strong>
+            <span>Total sales</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>Recently uploaded</h3></div>
+          <div class="recent-list" id="recentUploads"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>Popular books</h3></div>
+          <div class="recent-list" id="popularBooksList"></div>
+        </div>
+      </section>
+
+      <!-- ---------- Upload ---------- -->
+      <section class="dash-view" id="view-upload">
+        <div class="dash-topbar"><div><h1>Upload a book</h1><p class="text-muted">Add a new book to the catalogue — it'll be available to everyone right away.</p></div></div>
+
+        <div class="panel">
+          <form id="uploadForm">
+            <div class="form-grid">
+              <div class="form-row full">
+                <label>File</label>
+                <div class="dropzone" id="dropzone">
+                  <div class="ic">📄</div>
+                  <p><strong>Click to choose a file</strong> or drag it here</p>
+                  <small>PDF, DOCX, PPT/PPTX, or image · up to 100 MB</small>
+                  <div class="file-chip hidden-init" id="fileChip"></div>
+                </div>
+                <input type="file" id="fileInput" accept=".pdf,.docx,.ppt,.pptx,.png,.jpg,.jpeg,.webp,.gif" class="hidden-init" />
+              </div>
+
+              <div class="form-row full">
+                <label for="coverInput">Cover image (optional)</label>
+                <input type="file" id="coverInput" accept=".png,.jpg,.jpeg,.webp,.gif" />
+                <div class="file-chip hidden-init" id="coverChip"></div>
+              </div>
+
+              <div class="form-row">
+                <label for="uploadTitle">Book name</label>
+                <input type="text" id="uploadTitle" placeholder="Data Structures & Algorithms" required />
+              </div>
+              <div class="form-row">
+                <label for="uploadAuthor">Author</label>
+                <input type="text" id="uploadAuthor" placeholder="M. Anisur Rahman" required />
+              </div>
+
+              <div class="form-row">
+                <label for="uploadDept">Department</label>
+                <select id="uploadDept" required></select>
+              </div>
+              <div class="form-row">
+                <label for="uploadSem">Semester</label>
+                <select id="uploadSem" required></select>
+              </div>
+
+              <div class="form-row full">
+                <label for="uploadCourse">Course name</label>
+                <input type="text" id="uploadCourse" list="courseSuggestions" placeholder="Data Structures" required />
+                <datalist id="courseSuggestions"></datalist>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-1">Upload Book</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ---------- Manage Books ---------- -->
+      <section class="dash-view" id="view-manage">
+        <div class="dash-topbar"><div><h1>Manage books</h1><p class="text-muted">Edit details or remove a title from the catalogue.</p></div></div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>All books</h3>
+            <input type="search" class="table-search" data-target="manageBooksBody" placeholder="Search books…" aria-label="Search books" />
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th data-sort="text">Title</th><th data-sort="text">Course</th><th data-sort="text">Department</th><th data-sort="number">Semester</th><th data-sort="number">Size</th><th data-sort="text">Uploaded</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="manageBooksBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- Departments / Semesters / Courses ---------- -->
+      <section class="dash-view" id="view-departments">
+        <div class="dash-topbar"><div><h1>Departments &amp; curriculum</h1><p class="text-muted">Add departments, extend semesters, and register new courses.</p></div></div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>Existing departments</h3></div>
+          <div class="recent-list" id="deptManagerList"></div>
+        </div>
+
+        <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;align-items:start;">
+          <div class="panel">
+            <div class="panel-head"><h3>Add department</h3></div>
+            <form id="addDeptForm">
+              <div class="form-row"><label for="newDeptName">Name</label><input type="text" id="newDeptName" placeholder="Physics" required /></div>
+              <div class="form-row"><label for="newDeptIcon">Icon (emoji)</label><input type="text" id="newDeptIcon" placeholder="⚛️" /></div>
+              <div class="form-row"><label for="newDeptSemesters">Total semesters</label><input type="number" id="newDeptSemesters" min="1" max="12" value="8" required /></div>
+              <button type="submit" class="btn btn-primary btn-block">Add department</button>
+            </form>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><h3>Add semester</h3></div>
+            <form id="addSemForm">
+              <div class="form-row"><label for="semDeptSelect">Department</label><select id="semDeptSelect" required></select></div>
+              <p class="text-muted" style="font-size:.82rem;margin-bottom:.8rem;">Adds the next semester in sequence to the selected department.</p>
+              <button type="submit" class="btn btn-primary btn-block">Add next semester</button>
+            </form>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><h3>Add course</h3></div>
+            <form id="addCourseForm">
+              <div class="form-row"><label for="courseDeptSelect">Department</label><select id="courseDeptSelect" required></select></div>
+              <div class="form-row"><label for="courseSemSelect">Semester</label><select id="courseSemSelect" required></select></div>
+              <div class="form-row"><label for="newCourseName">Course name</label><input type="text" id="newCourseName" placeholder="Robotics" required /></div>
+              <button type="submit" class="btn btn-primary btn-block">Add course</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- Store Books ---------- -->
+      <section class="dash-view" id="view-storebooks">
+        <div class="dash-topbar"><div><h1>Store books</h1><p class="text-muted">Add titles for sale, manage stock, price, and availability.</p></div></div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>Add a store book</h3></div>
+          <form id="storeBookForm">
+            <div class="form-grid">
+              <div class="form-row"><label for="sbTitle">Title</label><input type="text" id="sbTitle" placeholder="The Sealed Nectar" required /></div>
+              <div class="form-row"><label for="sbAuthor">Author</label><input type="text" id="sbAuthor" placeholder="Safiur Rahman Mubarakpuri" required /></div>
+              <div class="form-row"><label for="sbCategory">Category</label><select id="sbCategory" required></select></div>
+              <div class="form-row"><label for="sbPrice">Price (৳)</label><input type="number" id="sbPrice" min="0" step="0.01" placeholder="450" required /></div>
+              <div class="form-row"><label for="sbStock">Stock</label><input type="number" id="sbStock" min="0" step="1" placeholder="10" required /></div>
+              <div class="form-row"><label for="sbAvailable">Availability</label>
+                <select id="sbAvailable">
+                  <option value="true" selected>Available</option>
+                  <option value="false">Not available</option>
+                </select>
+              </div>
+              <div class="form-row"><label for="sbPublisher">Publisher</label><input type="text" id="sbPublisher" placeholder="Darussalam" /></div>
+              <div class="form-row"><label for="sbIsbn">ISBN</label><input type="text" id="sbIsbn" placeholder="978-..." /></div>
+              <div class="form-row full"><label for="sbShortDesc">Short description</label><input type="text" id="sbShortDesc" maxlength="140" placeholder="One line shown on the book card" required /></div>
+              <div class="form-row full"><label for="sbFullDesc">Full description</label><textarea id="sbFullDesc" rows="4" placeholder="Shown on the book's details page" required></textarea></div>
+              <div class="form-row full">
+                <label for="sbImages">Cover / gallery images (up to 4, optional)</label>
+                <input type="file" id="sbImages" accept=".png,.jpg,.jpeg,.webp,.gif" multiple />
+                <div class="file-chip hidden-init" id="sbImagesChip"></div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-1">Add book to store</button>
+          </form>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Store catalogue</h3>
+            <input type="search" class="table-search" data-target="storeBooksBody" placeholder="Search store books…" aria-label="Search store books" />
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th data-sort="text">Book</th><th data-sort="text">Category</th><th data-sort="number">Price</th><th data-sort="number">Stock</th><th data-sort="text">Status</th><th>Actions</th></tr></thead>
+              <tbody id="storeBooksBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- Store Categories ---------- -->
+      <section class="dash-view" id="view-storecats">
+        <div class="dash-topbar"><div><h1>Store categories</h1><p class="text-muted">Organize the book store — Islamic, Novels, Academic, Children's, and more.</p></div></div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>Existing categories</h3></div>
+          <div class="recent-list" id="storeCatManagerList"></div>
+        </div>
+
+        <div class="panel" style="max-width:480px;">
+          <div class="panel-head"><h3>Add category</h3></div>
+          <form id="addStoreCatForm">
+            <div class="form-row"><label for="newCatName">Name</label><input type="text" id="newCatName" placeholder="Islamic" required /></div>
+            <div class="form-row"><label for="newCatIcon">Icon (emoji)</label><input type="text" id="newCatIcon" placeholder="🕌" /></div>
+            <div class="form-row"><label for="newCatDesc">Description</label><input type="text" id="newCatDesc" placeholder="Quran, Hadith, and Islamic literature." /></div>
+            <button type="submit" class="btn btn-primary btn-block">Add category</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ---------- Orders ---------- -->
+      <section class="dash-view" id="view-orders">
+        <div class="dash-topbar"><div><h1>Book orders</h1><p class="text-muted">Requests placed through the homepage "Buy Book" button.</p></div></div>
+        <div class="panel">
+          <div class="panel-head"><h3>Orders</h3></div>
+          <div class="recent-list" id="ordersList"></div>
+        </div>
+      </section>
+
+      <!-- ---------- Messages ---------- -->
+      <section class="dash-view" id="view-messages">
+        <div class="dash-topbar"><div><h1>Messages</h1><p class="text-muted">Notes sent through the homepage contact form.</p></div></div>
+        <div class="panel">
+          <div class="panel-head"><h3>Inbox</h3></div>
+          <div class="recent-list" id="messagesList"></div>
+        </div>
+      </section>
+
+      <!-- ---------- Users ---------- -->
+      <section class="dash-view" id="view-users">
+        <div class="dash-topbar"><div><h1>Registered users</h1><p class="text-muted">Everyone who has signed up on the site. Toggle download permission per user.</p></div></div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>All users</h3>
+            <input type="search" class="table-search" data-target="usersBody" placeholder="Search users…" aria-label="Search users" />
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th data-sort="text">Name</th><th data-sort="text">Mobile</th><th data-sort="text">Email</th><th data-sort="text">Address</th><th data-sort="text">Joined</th><th>Permission</th></tr></thead>
+              <tbody id="usersBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- Download History ---------- -->
+      <section class="dash-view" id="view-downloads">
+        <div class="dash-topbar"><div><h1>Download history</h1><p class="text-muted">A log of every book download by a signed-in user.</p></div></div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Download log</h3>
+            <input type="search" class="table-search" data-target="downloadHistoryBody" placeholder="Search downloads…" aria-label="Search downloads" />
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th data-sort="text">User</th><th data-sort="text">Book</th><th data-sort="text">Date</th></tr></thead>
+              <tbody id="downloadHistoryBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- Reading Statistics ---------- -->
+      <section class="dash-view" id="view-readingstats">
+        <div class="dash-topbar"><div><h1>Reading statistics</h1><p class="text-muted">How often each user has opened a book to read.</p></div></div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Reading activity</h3>
+            <input type="search" class="table-search" data-target="readingStatsBody" placeholder="Search reading stats…" aria-label="Search reading stats" />
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th data-sort="text">User</th><th data-sort="text">Book</th><th data-sort="number">Times opened</th><th data-sort="text">Last read</th></tr></thead>
+              <tbody id="readingStatsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ============================= DELETE CONFIRM MODAL ============================= -->
+  <div class="modal-backdrop" id="deleteModal">
+    <div class="modal">
+      <h3>Delete this book?</h3>
+      <p class="text-muted">This removes it from the website and from localStorage. This action can't be undone.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="cancelDeleteBtn">Cancel</button>
+        <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= EDIT MODAL ============================= -->
+  <div class="modal-backdrop" id="editModal">
+    <div class="modal">
+      <h3>Edit book</h3>
+      <form id="editForm">
+        <div class="form-row"><label for="editTitle">Book name</label><input type="text" id="editTitle" required /></div>
+        <div class="form-row"><label for="editAuthor">Author</label><input type="text" id="editAuthor" required /></div>
+        <div class="form-row"><label for="editDept">Department</label><select id="editDept" required></select></div>
+        <div class="form-row"><label for="editSem">Semester</label><select id="editSem" required></select></div>
+        <div class="form-row"><label for="editCourse">Course name</label><input type="text" id="editCourse" required /></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="closeEditBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================= EDIT STORE BOOK MODAL ============================= -->
+  <div class="modal-backdrop" id="editStoreBookModal">
+    <div class="modal">
+      <h3>Edit store book</h3>
+      <form id="editStoreBookForm">
+        <div class="form-row"><label for="esbTitle">Title</label><input type="text" id="esbTitle" required /></div>
+        <div class="form-row"><label for="esbAuthor">Author</label><input type="text" id="esbAuthor" required /></div>
+        <div class="form-row"><label for="esbCategory">Category</label><select id="esbCategory" required></select></div>
+        <div class="form-row"><label for="esbPrice">Price (৳)</label><input type="number" id="esbPrice" min="0" step="0.01" required /></div>
+        <div class="form-row"><label for="esbStock">Stock</label><input type="number" id="esbStock" min="0" step="1" required /></div>
+        <div class="form-row"><label for="esbAvailable">Availability</label>
+          <select id="esbAvailable">
+            <option value="true">Available</option>
+            <option value="false">Not available</option>
+          </select>
+        </div>
+        <div class="form-row"><label for="esbPublisher">Publisher</label><input type="text" id="esbPublisher" /></div>
+        <div class="form-row"><label for="esbIsbn">ISBN</label><input type="text" id="esbIsbn" /></div>
+        <div class="form-row"><label for="esbShortDesc">Short description</label><input type="text" id="esbShortDesc" maxlength="140" required /></div>
+        <div class="form-row"><label for="esbFullDesc">Full description</label><textarea id="esbFullDesc" rows="4" required></textarea></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="closeEditStoreBookBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toastHost"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+</body>
+</html>

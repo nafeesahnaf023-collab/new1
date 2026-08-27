@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Account — Online Library</title>
+<meta name="description" content="Manage your profile, library, cart, and orders on Online Library." />
+<meta name="robots" content="noindex, nofollow" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%276%27 fill=%27%231c6b46%27/%3E%3Cpath d=%27M6 18.5A2 2 0 0 1 8 16.5H18%27 stroke=%27white%27 stroke-width=%272%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3Cpath d=%27M8 4H18v16H8A2 2 0 0 1 6 18V6A2 2 0 0 1 8 4Z%27 stroke=%27white%27 stroke-width=%272%27 fill=%27none%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E" />
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#1c6b46" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="user-dashboard">
+
+  <div id="loadingScreen">
+    <div class="loader-book"><span></span></div>
+    <p>Opening your account…</p>
+  </div>
+
+  <!-- Shown if someone reaches this page without logging in -->
+  <div class="dash-locked hidden-init" id="userDashLocked">
+    <div class="logo-mark icon-lg">🔒</div>
+    <h2>Please log in</h2>
+    <p class="text-muted">Sign in to view your profile, library, cart, and orders.</p>
+    <a href="index.html" class="btn btn-primary">Go to homepage</a>
+  </div>
+
+  <div class="dash-shell hidden-init" id="userDashShell">
+    <div class="dash-floating-shapes" aria-hidden="true"><span></span><span></span></div>
+
+    <!-- ============================= SIDEBAR ============================= -->
+    <aside class="dash-sidebar">
+      <a href="index.html" class="logo">
+        <span class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></span>
+        Online Library
+      </a>
+      <nav class="dash-nav">
+        <button data-view="overview" class="active">📊 &nbsp;My Dashboard</button>
+        <button data-view="profile">👤 &nbsp;My Profile</button>
+        <button data-view="edit-profile">✏️ &nbsp;Edit Profile</button>
+        <button data-view="library">📚 &nbsp;My Library</button>
+        <button data-view="favorites">⭐ &nbsp;Favorites</button>
+        <button data-view="activity">🕒 &nbsp;Activity History</button>
+        <button data-view="notifications">🔔 &nbsp;Notifications</button>
+        <button data-view="cart">🛒 &nbsp;Cart</button>
+        <button data-view="orders">🧾 &nbsp;My Orders</button>
+        <button data-view="settings">⚙️ &nbsp;Settings</button>
+      </nav>
+      <button class="icon-btn theme-toggle self-start" aria-label="Toggle dark mode"></button>
+      <button class="logout-btn" id="userLogoutBtn">↩ Log out</button>
+    </aside>
+
+    <!-- ============================= MAIN ============================= -->
+    <main class="dash-main">
+
+      <!-- ---------- Overview / My Dashboard ---------- -->
+      <section class="dash-view active" id="view-overview">
+        <div class="ov-greet-card reveal">
+          <span class="ov-greet-avatar" id="ovAvatarInitials">—</span>
+          <div class="ov-greet-text">
+            <h1>Welcome back, <span id="greetUserName"></span> 👋</h1>
+            <p>Here's a quick snapshot of your account and recent activity.</p>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card reveal">
+            <div class="stat-card-icon">📖</div>
+            <div class="stat-card-value" id="statBooksRead">0</div>
+            <div class="stat-card-label">Books read</div>
+          </div>
+          <div class="stat-card reveal">
+            <div class="stat-card-icon">⬇️</div>
+            <div class="stat-card-value" id="statDownloads">0</div>
+            <div class="stat-card-label">Downloads</div>
+          </div>
+          <div class="stat-card reveal">
+            <div class="stat-card-icon">🧾</div>
+            <div class="stat-card-value" id="statOrders">0</div>
+            <div class="stat-card-label">Orders placed</div>
+          </div>
+          <div class="stat-card reveal">
+            <div class="stat-card-icon">৳</div>
+            <div class="stat-card-value" id="statSpent">৳0</div>
+            <div class="stat-card-label">Total spent</div>
+          </div>
+        </div>
+
+        <div class="overview-grid">
+          <div class="panel">
+            <div class="panel-head"><h3>Recent activity</h3></div>
+            <div class="recent-list" id="ovRecentActivity"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Account snapshot</h3></div>
+            <div class="book-meta-line"><span>Last login</span><span id="ovLastLogin">—</span></div>
+            <div class="book-meta-line"><span>Member since</span><span id="ovMemberSince">—</span></div>
+            <div class="book-meta-line"><span>Download permission</span><span id="ovDownloadPermission">—</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- My Profile (read-only summary) ---------- -->
+      <section class="dash-view" id="view-profile">
+        <div class="dash-topbar">
+          <div>
+            <h1>My Profile</h1>
+            <p class="text-muted">Your account details at a glance.</p>
+          </div>
+          <a href="index.html" class="btn btn-outline btn-sm">View live site →</a>
+        </div>
+
+        <div class="panel panel-narrow">
+          <div class="profile-summary-head">
+            <span class="profile-summary-avatar" id="profileAvatarInitials">—</span>
+            <div>
+              <h3 id="profileSummaryName">—</h3>
+              <p class="text-muted" id="profileSummaryEmail">—</p>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" id="goToEditProfileBtn" style="margin-left:auto;">Edit profile →</button>
+          </div>
+          <div class="profile-info-grid">
+            <div class="profile-info-item"><span>Mobile number</span><strong id="profileSummaryMobile">—</strong></div>
+            <div class="profile-info-item"><span>Address</span><strong id="profileSummaryAddress">—</strong></div>
+            <div class="profile-info-item"><span>Member since</span><strong id="profileSummaryJoined">—</strong></div>
+            <div class="profile-info-item"><span>Download permission</span><strong id="profileSummaryDownload">—</strong></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- Edit Profile ---------- -->
+      <section class="dash-view" id="view-edit-profile">
+        <div class="dash-topbar">
+          <div>
+            <h1>Edit Profile</h1>
+            <p class="text-muted">Update your details and password.</p>
+          </div>
+        </div>
+
+        <div class="panel panel-narrow">
+          <div class="panel-head"><h3>Your details</h3></div>
+
+          <div class="edit-avatar-row">
+            <span class="edit-avatar-circle" id="editAvatarCircle">
+              <span id="editAvatarInitials">—</span>
+              <img id="editAvatarPreviewImg" alt="Profile preview" style="display:none;" />
+            </span>
+            <div class="edit-avatar-actions">
+              <input type="file" id="editAvatarInput" accept="image/jpeg,image/png,image/webp" hidden />
+              <button type="button" class="btn btn-outline btn-sm" id="editAvatarChooseBtn">Change photo</button>
+              <p class="edit-avatar-hint">JPG, PNG or WebP. This is a live preview — photo uploads will be saved to your account once server-side avatar storage is enabled.</p>
+            </div>
+          </div>
+
+          <form id="profileForm" novalidate>
+            <div class="field-float">
+              <input type="text" id="profFullName" placeholder=" " required />
+              <label for="profFullName">Full Name</label>
+            </div>
+            <div class="field-float">
+              <input type="text" id="profMobile" placeholder=" " disabled />
+              <label for="profMobile">Mobile Number</label>
+            </div>
+            <div class="field-float">
+              <input type="email" id="profEmail" placeholder=" " disabled />
+              <label for="profEmail">Email Address</label>
+            </div>
+            <div class="field-float">
+              <input type="text" id="profAddress" placeholder=" " required />
+              <label for="profAddress">Full Address</label>
+            </div>
+            <button type="submit" class="btn btn-primary mt-1 form-submit-btn" id="profileSaveBtn">
+              <span class="btn-label">Save changes</span><span class="btn-spinner"></span>
+            </button>
+            <div class="form-success-msg" id="profileSaveSuccess">✓ Profile updated successfully.</div>
+          </form>
+          <p class="text-muted" style="margin-top:.9rem;font-size:.8rem;">Email and mobile number can't be changed since they identify your account. Contact an admin if either needs updating.</p>
+        </div>
+
+        <div class="panel panel-narrow" id="changePasswordPanel">
+          <div class="panel-head"><h3>Change password</h3></div>
+          <form id="changePasswordForm" novalidate>
+            <div class="field-float field-float-pw">
+              <input type="password" id="pwCurrent" placeholder=" " autocomplete="current-password" required />
+              <label for="pwCurrent">Current password</label>
+              <button type="button" class="auth-pw-toggle" data-toggle-for="pwCurrent" aria-label="Show password" tabindex="-1">👁</button>
+            </div>
+            <div class="field-float field-float-pw">
+              <input type="password" id="pwNew" placeholder=" " autocomplete="new-password" required />
+              <label for="pwNew">New password</label>
+              <button type="button" class="auth-pw-toggle" data-toggle-for="pwNew" aria-label="Show password" tabindex="-1">👁</button>
+            </div>
+            <div class="field-float field-float-pw">
+              <input type="password" id="pwConfirm" placeholder=" " autocomplete="new-password" required />
+              <label for="pwConfirm">Confirm new password</label>
+              <button type="button" class="auth-pw-toggle" data-toggle-for="pwConfirm" aria-label="Show password" tabindex="-1">👁</button>
+            </div>
+            <div class="auth-error" id="pwChangeError"></div>
+            <button type="submit" class="btn btn-primary mt-1 form-submit-btn" id="pwChangeBtn">
+              <span class="btn-label">Update password</span><span class="btn-spinner"></span>
+            </button>
+            <div class="form-success-msg" id="pwChangeSuccess">✓ Password changed successfully.</div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ---------- My Library ---------- -->
+      <section class="dash-view" id="view-library">
+        <div class="dash-topbar"><div><h1>My Library</h1><p class="text-muted">Browse your department's books, then read or download.</p></div></div>
+
+        <div class="panel">
+          <div class="dept-filter-row" id="myLibDeptChips"></div>
+          <div class="sem-tabs" id="myLibSemTabs"></div>
+          <div class="book-grid" id="myLibGrid"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>Recently read</h3></div>
+          <div class="recent-list" id="myReadingHistory"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>Download history</h3></div>
+          <div class="recent-list" id="myDownloadHistory"></div>
+        </div>
+      </section>
+
+      <!-- ---------- Favorites / Bookmarks ---------- -->
+      <section class="dash-view" id="view-favorites">
+        <div class="dash-topbar"><div><h1>Favorites</h1><p class="text-muted">Books you've bookmarked for later.</p></div></div>
+        <div class="panel">
+          <div class="book-grid" id="favoritesGrid"></div>
+        </div>
+      </section>
+
+      <!-- ---------- Activity History ---------- -->
+      <section class="dash-view" id="view-activity">
+        <div class="dash-topbar"><div><h1>Activity History</h1><p class="text-muted">Everything you've read, downloaded, or ordered, in one timeline.</p></div></div>
+        <div class="panel">
+          <div id="activityHistoryList"></div>
+        </div>
+      </section>
+
+      <!-- ---------- Notifications ---------- -->
+      <section class="dash-view" id="view-notifications">
+        <div class="dash-topbar"><div><h1>Notifications</h1><p class="text-muted">Updates about your orders and account.</p></div></div>
+        <div class="panel">
+          <div id="notificationsList"></div>
+        </div>
+      </section>
+
+      <!-- ---------- Cart ---------- -->
+      <section class="dash-view" id="view-cart">
+        <div class="dash-topbar"><div><h1>Your cart</h1><p class="text-muted">Books from the Book Store you've added but haven't ordered yet.</p></div></div>
+        <div class="panel" style="max-width:640px;">
+          <div class="recent-list" id="userCartList"></div>
+          <div class="book-meta-line" style="font-weight:700;margin-top:.8rem;"><span>Total</span><span id="userCartTotal">৳0</span></div>
+          <div style="display:flex;gap:.7rem;margin-top:1rem;">
+            <button class="btn btn-outline" id="goToStoreBtn">Browse the store</button>
+            <button class="btn btn-primary" id="cartCheckoutBtnDash">Checkout</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- Orders ---------- -->
+      <section class="dash-view" id="view-orders">
+        <div class="dash-topbar">
+          <div><h1>My orders</h1><p class="text-muted">Every order you've placed from the Book Store, with live status.</p></div>
+          <button type="button" class="btn btn-outline btn-sm" id="refreshOrdersBtn">↻ Refresh status</button>
+        </div>
+        <div class="panel">
+          <div class="recent-list" id="myOrdersList"></div>
+        </div>
+      </section>
+
+      <!-- ---------- Settings ---------- -->
+      <section class="dash-view" id="view-settings">
+        <div class="dash-topbar"><div><h1>Settings</h1><p class="text-muted">Preferences for this browser and account status.</p></div></div>
+        <div class="panel panel-narrow">
+          <div class="settings-row">
+            <div><h5>Appearance</h5><span>Switch between light and dark mode.</span></div>
+            <button class="icon-btn theme-toggle" aria-label="Toggle dark mode"></button>
+          </div>
+          <div class="settings-row">
+            <div><h5>Download permission</h5><span id="settingsDownloadPermission">—</span></div>
+          </div>
+          <div class="settings-row">
+            <div><h5>Password</h5><span>Change your account password.</span></div>
+            <button type="button" class="btn btn-outline btn-sm" id="goToChangePasswordBtn">Change password →</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div id="toastHost"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+</body>
+</html>
